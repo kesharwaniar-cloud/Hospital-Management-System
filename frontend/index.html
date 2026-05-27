@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hospital Management System</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 40px auto; padding: 20px; background: #f0f4f8; }
+        h1 { color: #2c3e50; text-align: center; }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; }
+        button { width: 100%; padding: 10px; margin: 5px 0; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        #admitBtn { background: #27ae60; color: white; }
+        #dischargeBtn { background: #e74c3c; color: white; }
+        #displayBtn { background: #2980b9; color: white; }
+        #output { background: white; padding: 15px; border-radius: 5px; margin-top: 20px; min-height: 150px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background: #2c3e50; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🏥 Hospital Management System</h1>
+
+    <input type="text" id="patientName" placeholder="Enter Patient Name">
+    <input type="text" id="disease" placeholder="Enter Disease">
+
+    <button id="admitBtn" onclick="admitPatient()">Admit Patient</button>
+    <button id="dischargeBtn" onclick="dischargePatient()">Discharge Patient</button>
+    <button id="displayBtn" onclick="displayPatients()">Display All Patients</button>
+
+    <div id="output"></div>
+
+    <script>
+        const API = 'http://localhost:3000';
+
+        async function admitPatient() {
+            const name = document.getElementById('patientName').value;
+            const disease = document.getElementById('disease').value;
+            if (!name || !disease) { alert('Name aur Disease dono bharo!'); return; }
+            const res = await fetch(`${API}/admit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, disease })
+            });
+            const data = await res.json();
+            document.getElementById('output').innerHTML = `<p style="color:green">✅ ${data.message}</p>`;
+        }
+
+        async function dischargePatient() {
+            const name = document.getElementById('patientName').value;
+            if (!name) { alert('Patient ka naam bharo!'); return; }
+            const res = await fetch(`${API}/discharge/${name}`, { method: 'DELETE' });
+            const data = await res.json();
+            document.getElementById('output').innerHTML = `<p style="color:red">🔴 ${data.message}</p>`;
+        }
+
+        async function displayPatients() {
+            const res = await fetch(`${API}/patients`);
+            const data = await res.json();
+            if (data.length === 0) {
+                document.getElementById('output').innerHTML = '<p>Koi patient nahi hai abhi</p>';
+                return;
+            }
+            let table = '<table><tr><th>ID</th><th>Name</th><th>Disease</th></tr>';
+            data.forEach(p => {
+                table += `<tr><td>${p.id}</td><td>${p.name}</td><td>${p.disease}</td></tr>`;
+            });
+            table += '</table>';
+            document.getElementById('output').innerHTML = table;
+        }
+    </script>
+</body>
+</html>
